@@ -89,16 +89,13 @@ message.innerHTML =
 // header.before(message);
 header.append(message);
 
-document
-  .querySelector('.btn-close-cookie')
-  .addEventListener('click', () => message.remove());
+document.querySelector('.btn-close-cookie').addEventListener('click', () => message.remove());
 
 // Styles
 message.style.backgroundColor = '#37383d';
 message.style.width = '120%';
 
-message.style.height =
-  Number.parseFloat(getComputedStyle(message).height, 10) + 30 + 'px';
+message.style.height = Number.parseFloat(getComputedStyle(message).height, 10) + 30 + 'px';
 
 // tabs.forEach(tab => {
 //   tab.addEventListener('click', () => console.log('tab'))
@@ -160,12 +157,33 @@ const stickyNav = entries => {
   else nav.classList.add('sticky');
 };
 
-const observerOptions = {
+const navObserverOptions = {
   root: null,
   threshold: 0,
   rootMargin: `-${navHeight}px`,
 };
 
-const observer = new IntersectionObserver(stickyNav, observerOptions);
+const observer = new IntersectionObserver(stickyNav, navObserverOptions);
 
 observer.observe(header);
+
+// Reveal sections
+
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+allSections.forEach(section => {
+  section.classList.add('section--hidden');
+  sectionObserver.observe(section);
+});
