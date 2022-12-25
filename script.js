@@ -1,218 +1,171 @@
 'use strict';
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// BANKIST APP
+///////////////////////////////////////
+// Modal window
 
-// Data
-const account1 = {
-  owner: 'Jonas Schmedtmann',
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
-  interestRate: 1.2, // %
-  pin: 1111,
+const modal = document.querySelector('.modal');
+const overlay = document.querySelector('.overlay');
+const btnCloseModal = document.querySelector('.btn--close-modal');
+const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
+const btnScrollTo = document.querySelector('.btn--scroll-to');
+const section1 = document.querySelector('#section--1');
+
+const openModal = function (e) {
+  e.preventDefault();
+  modal.classList.remove('hidden');
+  overlay.classList.remove('hidden');
 };
 
-const account2 = {
-  owner: 'Jessica Davis',
-  movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
-  interestRate: 1.5,
-  pin: 2222,
+const closeModal = function () {
+  modal.classList.add('hidden');
+  overlay.classList.add('hidden');
 };
 
-const account3 = {
-  owner: 'Steven Thomas Williams',
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
-  interestRate: 0.7,
-  pin: 3333,
-};
+btnsOpenModal.forEach(btn => btn.addEventListener('click', openModal));
 
-const account4 = {
-  owner: 'Sarah Smith',
-  movements: [430, 1000, 700, 50, 90],
-  interestRate: 1,
-  pin: 4444,
-};
+btnCloseModal.addEventListener('click', closeModal);
+overlay.addEventListener('click', closeModal);
 
-const accounts = [account1, account2, account3, account4];
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+    closeModal();
+  }
+});
 
-// Elements
-const labelWelcome = document.querySelector('.welcome');
-const labelDate = document.querySelector('.date');
-const labelBalance = document.querySelector('.balance__value');
-const labelSumIn = document.querySelector('.summary__value--in');
-const labelSumOut = document.querySelector('.summary__value--out');
-const labelSumInterest = document.querySelector('.summary__value--interest');
-const labelTimer = document.querySelector('.timer');
+// Smooth Scrolling
 
-const containerApp = document.querySelector('.app');
-const containerMovements = document.querySelector('.movements');
+btnScrollTo.addEventListener('click', () => {
+  const s1Coords = section1.getBoundingClientRect();
 
-const btnLogin = document.querySelector('.login__btn');
-const btnTransfer = document.querySelector('.form__btn--transfer');
-const btnLoan = document.querySelector('.form__btn--loan');
-const btnClose = document.querySelector('.form__btn--close');
-const btnSort = document.querySelector('.btn--sort');
+  // window.scrollTo({
+  //   left: s1Coords.left,
+  //   top: s1Coords.top + window.scrollY,
+  //   behavior: 'smooth',
+  // });
 
-const inputLoginUsername = document.querySelector('.login__input--user');
-const inputLoginPin = document.querySelector('.login__input--pin');
-const inputTransferTo = document.querySelector('.form__input--to');
-const inputTransferAmount = document.querySelector('.form__input--amount');
-const inputLoanAmount = document.querySelector('.form__input--loan-amount');
-const inputCloseUsername = document.querySelector('.form__input--user');
-const inputClosePin = document.querySelector('.form__input--pin');
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
 
-const displayMovements = (movements, sort = false) => {
-  containerMovements.innerHTML = '';
+// Page navigation
+// document.querySelectorAll('.nav__link').forEach(function (link) {
+//   link.addEventListener('click', function (e) {
+//     e.preventDefault();
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements.slice();
+//     const id = this.getAttribute('href');
+//     document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+//   });
+// });
 
-  movs.forEach((mov, i) => {
-    const type = mov > 0 ? 'deposit' : 'withdrawal';
-    const html = `
-        <div class="movements__row">
-          <div class="movements__type movements__type--${type}">
-            ${i + 1} ${type}
-          </div>
-          <div class="movements__value">${mov}€</div>
-        </div>`;
-    containerMovements.insertAdjacentHTML('afterbegin', html);
+document.querySelector('.nav__links').addEventListener('click', function (e) {
+  if (e.target.classList.contains('nav__link')) {
+    e.preventDefault();
+    const id = e.target.getAttribute('href');
+    document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
+
+const allSections = document.querySelectorAll('.section');
+const allButtons = document.getElementsByTagName('button');
+const header = document.querySelector('.header');
+const message = document.createElement('div');
+const nav = document.querySelector('.nav');
+
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContent = document.querySelectorAll('.operations__content');
+
+// creating and insert elements
+
+message.classList.add('cookie-message');
+
+message.innerHTML =
+  'We use cookies for improved functionality and analytics <button class="btn btn-close-cookie">Got it!</button>';
+
+// header.before(message);
+header.append(message);
+
+document
+  .querySelector('.btn-close-cookie')
+  .addEventListener('click', () => message.remove());
+
+// Styles
+message.style.backgroundColor = '#37383d';
+message.style.width = '120%';
+
+message.style.height =
+  Number.parseFloat(getComputedStyle(message).height, 10) + 30 + 'px';
+
+// tabs.forEach(tab => {
+//   tab.addEventListener('click', () => console.log('tab'))
+// })
+
+// Event delegation
+tabsContainer.addEventListener('click', e => {
+  const clicked = e.target.closest('.operations__tab');
+
+  if (!clicked) return;
+
+  tabs.forEach(tab => tab.classList.remove('operations__tab--active'));
+  clicked.classList.add('operations__tab--active');
+
+  const tabNumber = clicked.dataset.tab;
+  tabsContent.forEach(tabContent => {
+    tabContent.classList.remove('operations__content--active');
   });
-};
 
-const createUsername = function (accs) {
-  accs.forEach(function (acc) {
-    acc.username = acc.owner
-      .toLowerCase()
-      .split(' ')
-      .map(initial => initial[0])
-      .join('');
-  });
-};
+  const tab = document.querySelector(`.operations__content--${tabNumber}`);
+  tab.classList.add('operations__content--active');
+});
 
-const calcAndDisplayBalance = account => {
-  const balance = (account.balance = account.movements.reduce((acc, mov) => acc + mov, 0));
-  labelBalance.textContent = `${balance} €`;
-};
+// Menu fade animation
+const handleMenuFade = function (e) {
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
 
-const calcDisplaySummary = acc => {
-  const incomes = acc.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
-  const out = acc.movements.filter(mov => mov < 0).reduce((acc, mov) => acc + mov, 0);
-  const interest = acc.movements
-    .filter(mov => mov > 0)
-    .map(deposit => (deposit * acc.interestRate) / 100)
-    .filter(int => int >= 1)
-    .reduce((acc, int) => acc + int, 0);
+    const linkSiblings = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
 
-  labelSumIn.textContent = `${incomes}€`;
-  labelSumOut.textContent = `${Math.abs(out)}€`;
-  labelSumInterest.textContent = `${interest}€`;
-};
+    linkSiblings.forEach(el => {
+      if (el !== link) el.style.opacity = this;
+    });
 
-const updateUI = account => {
-  displayMovements(account.movements);
-  calcAndDisplayBalance(account);
-  calcDisplaySummary(account);
-};
-
-createUsername(accounts);
-
-// Event Handelers
-let currentAccount;
-btnLogin.addEventListener('click', event => {
-  event.preventDefault();
-
-  currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
-
-  if (currentAccount?.pin === Number(inputLoginPin?.value)) {
-    // Clear Input Field
-    inputLoginUsername.value = inputLoginPin.value = '';
-    inputLoginPin.blur();
-    inputLoginUsername.blur();
-
-    // Display UI
-    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
-    containerApp.style.opacity = 1;
-    updateUI(currentAccount);
+    logo.style.opacity = this;
   }
-});
+};
 
-btnTransfer.addEventListener('click', e => {
-  e.preventDefault();
+nav.addEventListener('mouseover', handleMenuFade.bind(0.5));
+nav.addEventListener('mouseout', handleMenuFade.bind(1));
 
-  const amount = inputTransferAmount.value - 0;
-  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+// Sticky navigation
 
-  // Clean inputs
-  inputTransferAmount.value = inputTransferTo.value = '';
-  inputTransferAmount.blur();
-  inputTransferTo.blur();
+// Bad for performance
+// const section1Coords = section1.getBoundingClientRect();
+// window.addEventListener('scroll', e => {
+//   const currentScrollPosition = window.scrollY;
 
-  if (
-    receiverAcc &&
-    amount > 0 &&
-    currentAccount.balance >= amount &&
-    receiverAcc?.username !== currentAccount.username
-  ) {
-    receiverAcc.movements.push(amount);
-    currentAccount.movements.push(-amount);
+//   if (section1Coords.top < currentScrollPosition) nav.classList.add('sticky');
+//   else nav.classList.remove('sticky');
+// });
 
-    // Update UI
-    updateUI(currentAccount);
-  }
-});
+const navHeight = nav.getBoundingClientRect().height;
+const stickyNav = entries => {
+  const [entry] = entries;
 
-btnLoan.addEventListener('click', e => {
-  e.preventDefault();
+  if (entry.isIntersecting) nav.classList.remove('sticky');
+  else nav.classList.add('sticky');
+};
 
-  const loanAmount = Number(inputLoanAmount.value);
+const observerOptions = {
+  root: null,
+  threshold: 0,
+  rootMargin: `-${navHeight}px`,
+};
 
-  if (
-    loanAmount &&
-    loanAmount > 0 &&
-    currentAccount.movements.some(mov => mov >= loanAmount / 10)
-  ) {
-    currentAccount.movements.push(loanAmount);
-    // Update UI
-    updateUI(currentAccount);
-  }
-});
+const observer = new IntersectionObserver(stickyNav, observerOptions);
 
-btnClose.addEventListener('click', e => {
-  e.preventDefault();
-  const username = inputCloseUsername.value;
-  const pin = Number(inputClosePin.value);
-
-  if (username === currentAccount.username && pin === currentAccount.pin) {
-    const accountIndex = accounts.findIndex(acc => (acc = currentAccount));
-
-    // Delete Account
-    accounts.splice(accountIndex, 1);
-
-    // Hide UI
-    labelWelcome.textContent = 'Log in to get started';
-    containerApp.style.opacity = 0;
-  }
-
-  inputCloseUsername.value = inputClosePin.value = '';
-});
-
-// THIS IS THE FLAG THAT INDICATES IF ARRAY IS TO BE SORTED OR NOT
-let sorted = false;
-btnSort.addEventListener('click', e => {
-  e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
-  sorted = !sorted;
-});
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
-
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
-
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-
+observer.observe(header);
